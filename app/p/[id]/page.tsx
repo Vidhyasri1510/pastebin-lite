@@ -3,14 +3,19 @@ import { notFound } from "next/navigation";
 export default async function PastePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  // ✅ unwrap params
+  const { id } = await params;
 
-  const res = await fetch(
-    `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/api/pastes/${id}`,
-    { cache: "no-store" }
-  );
+  const baseUrl =
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+
+  const res = await fetch(`${baseUrl}/api/pastes/${id}`, {
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     notFound();
