@@ -2,72 +2,56 @@
 
 import { useState } from "react";
 
-export default function HomePage() {
+export default function Home() {
   const [content, setContent] = useState("");
-  const [ttl, setTtl] = useState("");
-  const [views, setViews] = useState("");
+  const [pasteId, setPasteId] = useState("");
 
-  async function createPaste(e: React.FormEvent) {
-    e.preventDefault(); // 🔥 VERY IMPORTANT
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     const res = await fetch("/api/pastes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        content,
-        ttl_seconds: ttl ? Number(ttl) : null,
-        max_views: views ? Number(views) : null,
-      }),
+      body: JSON.stringify({ content }),
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error("API ERROR:", err);
-      alert("Paste create failed");
+      alert("Failed to create paste");
       return;
     }
 
     const data = await res.json();
-    window.location.href = data.url;
-  }
+    setPasteId(data.id);
+    setContent("");
+  };
 
   return (
-    <div style={{ padding: 30 }}>
-      <h2>Create Paste</h2>
+    <main style={{ padding: "20px" }}>
+      <h1>Pastebin Lite</h1>
 
-      <form onSubmit={createPaste}>
+      <form onSubmit={handleSubmit}>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Enter paste content"
-          rows={6}
-          style={{ width: "100%" }}
+          placeholder="Enter your text here..."
+          rows={10}
+          cols={50}
+          required
         />
-
-        <br /><br />
-
-        <input
-          type="number"
-          placeholder="TTL seconds (optional)"
-          value={ttl}
-          onChange={(e) => setTtl(e.target.value)}
-        />
-
-        <br /><br />
-
-        <input
-          type="number"
-          placeholder="Max views (optional)"
-          value={views}
-          onChange={(e) => setViews(e.target.value)}
-        />
-
-        <br /><br />
-
+        <br />
         <button type="submit">Create Paste</button>
       </form>
-    </div>
+
+      {pasteId && (
+        <p>
+          Paste Created:{" "}
+          <a href={`/p/${pasteId}`} target="_blank">
+            View Paste
+          </a>
+        </p>
+      )}
+    </main>
   );
 }
