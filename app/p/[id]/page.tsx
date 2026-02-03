@@ -8,10 +8,8 @@ export default async function PastePage({
   const { id } = params;
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/pastes/${id}`,
-    {
-      cache: "no-store",
-    }
+    `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"}/api/pastes/${id}`,
+    { cache: "no-store" }
   );
 
   if (!res.ok) {
