@@ -1,71 +1,73 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
-export default function Home() {
-  const [content, setContent] = useState('');
-  const [ttl, setTtl] = useState('');
-  const [views, setViews] = useState('');
-  const [result, setResult] = useState('');
+export default function HomePage() {
+  const [content, setContent] = useState("");
+  const [ttl, setTtl] = useState("");
+  const [views, setViews] = useState("");
 
-  const handleSubmit = async () => {
-    const res = await fetch('/api/pastes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+  async function createPaste(e: React.FormEvent) {
+    e.preventDefault(); // 🔥 VERY IMPORTANT
+
+    const res = await fetch("/api/pastes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         content,
-        ttl_seconds: ttl ? Number(ttl) : undefined,
-        max_views: views ? Number(views) : undefined,
+        ttl_seconds: ttl ? Number(ttl) : null,
+        max_views: views ? Number(views) : null,
       }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      alert(data.error);
+      const err = await res.text();
+      console.error("API ERROR:", err);
+      alert("Paste create failed");
       return;
     }
 
-    setResult(data.url);
-  };
+    const data = await res.json();
+    window.location.href = data.url;
+  }
 
   return (
-    <div style={{ padding: '40px' }}>
-      <h1>Pastebin Lite</h1>
+    <div style={{ padding: 30 }}>
+      <h2>Create Paste</h2>
 
-      <textarea
-        placeholder="Enter your paste..."
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        style={{ width: '100%', height: '150px' }}
-      />
+      <form onSubmit={createPaste}>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Enter paste content"
+          rows={6}
+          style={{ width: "100%" }}
+        />
 
-      <br /><br />
+        <br /><br />
 
-      <input
-        placeholder="TTL (seconds)"
-        value={ttl}
-        onChange={(e) => setTtl(e.target.value)}
-      />
+        <input
+          type="number"
+          placeholder="TTL seconds (optional)"
+          value={ttl}
+          onChange={(e) => setTtl(e.target.value)}
+        />
 
-      <br /><br />
+        <br /><br />
 
-      <input
-        placeholder="Max Views"
-        value={views}
-        onChange={(e) => setViews(e.target.value)}
-      />
+        <input
+          type="number"
+          placeholder="Max views (optional)"
+          value={views}
+          onChange={(e) => setViews(e.target.value)}
+        />
 
-      <br /><br />
+        <br /><br />
 
-      <button onClick={handleSubmit}>Create Paste</button>
-
-      {result && (
-        <div style={{ marginTop: '20px' }}>
-          <p>Paste URL:</p>
-          <a href={result}>{result}</a>
-        </div>
-      )}
+        <button type="submit">Create Paste</button>
+      </form>
     </div>
   );
 }
