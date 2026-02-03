@@ -3,17 +3,19 @@ import { notFound } from "next/navigation";
 export default async function PastePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
 
   const res = await fetch(
-    `http://localhost:3000/api/pastes/${id}`,
-    { cache: "no-store" }
+    `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/pastes/${id}`,
+    {
+      cache: "no-store",
+    }
   );
 
   if (!res.ok) {
-    return notFound();
+    notFound();
   }
 
   const data = await res.json();
