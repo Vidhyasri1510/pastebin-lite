@@ -1,4 +1,3 @@
-import kv from "@/lib/kv";
 import { notFound } from "next/navigation";
 
 export default async function PastePage({
@@ -8,37 +7,21 @@ export default async function PastePage({
 }) {
   const { id } = await params;
 
-  const raw = await kv.get(`paste:${id}`);
+  const res = await fetch(
+    `http://localhost:3000/api/pastes/${id}`,
+    { cache: "no-store" }
+  );
 
-  if (!raw) {
-    notFound();
+  if (!res.ok) {
+    return notFound();
   }
 
-  const paste = JSON.parse(raw);
-
-  // ✅ Expiry check
-  if (paste.expires_at && new Date() > new Date(paste.expires_at)) {
-    await kv.del(`paste:${id}`);
-    notFound();
-  }
-
-  // ✅ Max views check
-  if (paste.remaining_views !== null) {
-    if (paste.remaining_views <= 0) {
-      await kv.del(`paste:${id}`);
-      notFound();
-    }
-
-    // Reduce view count
-    paste.remaining_views -= 1;
-
-    await kv.set(`paste:${id}`, JSON.stringify(paste));
-  }
+  const data = await res.json();
 
   return (
     <div style={{ padding: "40px" }}>
       <h1>Paste</h1>
-      <pre>{paste.content}</pre>
+      <pre>{data.content}</pre>
     </div>
   );
 }

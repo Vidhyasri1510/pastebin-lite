@@ -1,25 +1,8 @@
-declare global {
-  var store: Map<string, string> | undefined;
-}
+import { Redis } from "@upstash/redis";
 
-const store = global.store ?? new Map<string, string>();
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
 
-if (!global.store) {
-  global.store = store;
-}
-
-const kv = {
-  async set(key: string, value: string) {
-    store.set(key, value);
-  },
-
-  async get(key: string) {
-    return store.get(key);
-  },
-
-  async del(key: string) {
-    store.delete(key);
-  },
-};
-
-export default kv;
+export default redis;
